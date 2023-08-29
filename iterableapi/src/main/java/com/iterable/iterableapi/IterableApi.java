@@ -350,23 +350,31 @@ public class IterableApi {
     }
 
     private void storeAuthData() {
-        getKeychain().saveEmail(_email);
-        getKeychain().saveUserId(_userId);
-        getKeychain().saveAuthToken(_authToken);
+        try {
+            getKeychain().saveEmail(_email);
+            getKeychain().saveUserId(_userId);
+            getKeychain().saveAuthToken(_authToken);
+        } catch (Exception e) {
+            IterableLogger.e(TAG, "Error while persisting email/userId", e);
+        }
     }
 
     private void retrieveEmailAndUserId() {
-        _email = getKeychain().getEmail();
-        _userId = getKeychain().getUserId();
-        _authToken = getKeychain().getAuthToken();
+        try {
+            _email = getKeychain().getEmail();
+            _userId = getKeychain().getUserId();
+            _authToken = getKeychain().getAuthToken();
 
-        if (config.authHandler != null) {
-            if (_authToken != null) {
-                getAuthManager().queueExpirationRefresh(_authToken);
-            } else {
-                IterableLogger.d(TAG, "Auth token found as null. Scheduling token refresh in 10 seconds...");
-                getAuthManager().scheduleAuthTokenRefresh(10000);
+            if (config.authHandler != null) {
+                if (_authToken != null) {
+                    getAuthManager().queueExpirationRefresh(_authToken);
+                } else {
+                    IterableLogger.d(TAG, "Auth token found as null. Scheduling token refresh in 10 seconds...");
+                    getAuthManager().scheduleAuthTokenRefresh(10000);
+                }
             }
+        } catch (Exception e) {
+            IterableLogger.e(TAG, "Error while retrieving email/userId/authToken", e);
         }
     }
 
